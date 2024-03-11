@@ -46,7 +46,7 @@ const Descriptor = ({ descriptor }: { descriptor: Descriptor }) => {
     );
 };
 
-export const Status = ({ version, descriptors }: StatusProps) => {
+export const Status = ({ version, descriptors, logs }: StatusProps) => {
     return (
         <div>
             <div>
@@ -65,6 +65,11 @@ export const Status = ({ version, descriptors }: StatusProps) => {
                 {descriptors.map(descriptor => {
                     return <Descriptor key={descriptor.path} descriptor={descriptor} />;
                 })}
+            </div>
+
+            <div>
+                <h2>Logs</h2>
+                <div>{JSON.stringify(logs, null, 2)}</div>
             </div>
         </div>
     );

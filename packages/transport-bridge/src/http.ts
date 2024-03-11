@@ -1,6 +1,6 @@
 import { HttpServer, parseBodyJSON, parseBodyText, Handler } from '@trezor/node-utils';
 import { Descriptor } from '@trezor/transport/src/types';
-import { arrayPartition } from '@trezor/utils';
+import { Log, arrayPartition } from '@trezor/utils';
 
 import { sessionsClient, createApi } from './core';
 import { ui } from './ui';
@@ -55,7 +55,10 @@ export class TrezordNode {
 
     public start() {
         return new Promise<void>(resolve => {
-            const app = new HttpServer({ port: this.port, logger: console });
+            const app = new HttpServer({
+                port: this.port,
+                logger: new Log('@trezor/transport-bridge', true),
+            });
 
             app.use([
                 (_req, res, next) => {
@@ -190,9 +193,8 @@ export class TrezordNode {
                         res.end(
                             ui.Status({
                                 version: this.version,
-                                logs: [],
-                                // @ts-expect-error
-                                descriptors: result,
+                                logs: app.logger.getLog(),
+                                descriptors: result.success ? result.payload.descriptors : [],
                             }),
                         );
                     });
