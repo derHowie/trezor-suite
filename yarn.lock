@@ -10835,12 +10835,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@trezor/transport-bridge@workspace:packages/transport-bridge"
   dependencies:
+    "@trezor/components": "workspace:*"
     "@trezor/node-utils": "workspace:*"
     "@trezor/protocol": "workspace:*"
     "@trezor/transport": "workspace:*"
     "@trezor/utils": "workspace:*"
     esbuild: "npm:^0.20.0"
     pkg: "npm:^5.8.1"
+    react: "npm:18.2.0"
+    react-dom: "npm:18.2.0"
     usb: "npm:^2.11.0"
   languageName: unknown
   linkType: soft

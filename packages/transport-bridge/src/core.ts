@@ -79,7 +79,22 @@ export const createApi = (apiStr: 'usb' | 'udp') => {
             return enumerateResult;
         }
 
-        return sessionsClient.enumerateDone({ paths: enumerateResult.payload });
+        // todo: one mapping here and one mapping below, maybe this could be improved
+        const enumerateDoneResponse = await sessionsClient.enumerateDone({
+            paths: enumerateResult.payload.map(d => d.path),
+        });
+
+        if (!enumerateDoneResponse.success) {
+            return enumerateDoneResponse;
+        }
+
+        const descriptors = enumerateDoneResponse.payload.descriptors.map(d => ({
+            path: d.path,
+            session: d.session,
+            type: enumerateResult.payload.find(e => e.path === d.path)?.type,
+        }));
+
+        return { ...enumerateDoneResponse, descriptors };
     };
 
     const acquire = async (acquireInput: AcquireInput) => {
