@@ -5,7 +5,6 @@
         "lib": ["dom", "dom.iterable", "esnext"],
         "emitDeclarationOnly": false,
         "noEmit": true,
-        "noImplicitAny": false,
         "plugins": [
             { "name": "typescript-styled-plugin" }
         ]
@@ -19,6 +18,7 @@
         { "path": "../components" },
         { "path": "../connect-web" },
         { "path": "../protobuf" },
+        { "path": "../schema-utils" },
         { "path": "../utils" }
     ]
 }

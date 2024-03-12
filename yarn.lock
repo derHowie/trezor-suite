@@ -9985,6 +9985,7 @@ __metadata:
     "@trezor/components": "workspace:^"
     "@trezor/connect-web": "workspace:^"
     "@trezor/protobuf": "workspace:^"
+    "@trezor/schema-utils": "workspace:^"
     "@trezor/utils": "workspace:^"
     "@types/redux-logger": "npm:^3.0.11"
     next: "npm:^14.1.1"
@@ -10410,7 +10411,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@trezor/schema-utils@workspace:*, @trezor/schema-utils@workspace:packages/schema-utils":
+"@trezor/schema-utils@workspace:*, @trezor/schema-utils@workspace:^, @trezor/schema-utils@workspace:packages/schema-utils":
   version: 0.0.0-use.local
   resolution: "@trezor/schema-utils@workspace:packages/schema-utils"
   dependencies:

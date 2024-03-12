@@ -16,6 +16,7 @@
         "@trezor/components": "workspace:^",
         "@trezor/connect-web": "workspace:^",
         "@trezor/protobuf": "workspace:^",
+        "@trezor/schema-utils": "workspace:^",
         "@trezor/utils": "workspace:^",
         "next": "^14.1.1",
         "nextra": "^2.13.4",
