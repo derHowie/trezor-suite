@@ -951,3 +951,26 @@ export const getTxHeaderSymbol = (transaction: WalletAccountTransaction) => {
 
     return symbol;
 };
+
+export const groupTransactionsBySymbol = (txs: WalletAccountTransaction[]) => {
+    const groupedTxs: Record<string, WalletAccountTransaction[]> = {};
+
+    txs.forEach(tx => {
+        if (tx.tokens.length === 0) {
+            if (!groupedTxs[tx.symbol]) {
+                groupedTxs[tx.symbol] = [];
+            }
+            groupedTxs[tx.symbol].push(tx);
+        } else {
+            tx.tokens.forEach(token => {
+                const groupKey = `${tx.symbol}-${token.contract}`;
+                if (!groupedTxs[groupKey]) {
+                    groupedTxs[groupKey] = [];
+                }
+                groupedTxs[groupKey].push(tx);
+            });
+        }
+    });
+
+    return groupedTxs;
+};

@@ -5,10 +5,16 @@ import {
 } from '@suite-common/fiat-services';
 import { createThunk } from '@suite-common/redux-utils';
 import { FiatCurrencyCode } from '@suite-common/suite-config';
-import { Account, TickerId, RateType, Timestamp } from '@suite-common/wallet-types';
-import { isTestnet } from '@suite-common/wallet-utils';
-import { AccountTransaction } from '@trezor/connect';
-import { getNetworkFeatures } from '@suite-common/wallet-config';
+import {
+    Account,
+    TickerId,
+    RateType,
+    Timestamp,
+    TokenAddress,
+    WalletAccountTransaction,
+} from '@suite-common/wallet-types';
+import { groupTransactionsBySymbol, isTestnet } from '@suite-common/wallet-utils';
+import { getNetworkFeatures, NetworkSymbol } from '@suite-common/wallet-config';
 
 import { fiatRatesActionsPrefix, REFETCH_INTERVAL } from './fiatRatesConstants';
 import { selectTickersToBeUpdated, selectTransactionsWithMissingRates } from './fiatRatesSelectors';
@@ -18,7 +24,7 @@ import { selectIsElectrumBackendSelected } from '../blockchain/blockchainSelecto
 
 type UpdateTxsFiatRatesThunkPayload = {
     account: Account;
-    txs: AccountTransaction[];
+    txs: WalletAccountTransaction[];
     localCurrency: FiatCurrencyCode;
 };
 
@@ -31,32 +37,53 @@ export const updateTxsFiatRatesThunk = createThunk(
     ) => {
         if (txs?.length === 0 || isTestnet(account.symbol)) return;
 
-        const timestamps = txs.map(tx => tx.blockTime!);
-
         const isElectrumBackend = selectIsElectrumBackendSelected(getState(), account.symbol);
 
-        try {
-            const results = await getFiatRatesForTimestamps(
-                { symbol: account.symbol },
-                timestamps,
-                localCurrency,
-                isElectrumBackend,
-            );
+        const groupedTxs = groupTransactionsBySymbol(txs);
 
-            if (results && 'tickers' in results) {
-                dispatch(
-                    transactionsActions.updateTransactionFiatRate(
-                        txs.map((tx, i) => ({
-                            txid: tx.txid,
-                            updateObject: { rates: results.tickers[i]?.rates },
-                            account,
-                            ts: Date.now(),
-                        })),
-                    ),
+        for (const key in groupedTxs) {
+            const [symbol, tokenAddress] = key.split('-');
+
+            const hasCoinDefinitions = getNetworkFeatures(symbol as NetworkSymbol).includes(
+                'coin-definitions',
+            );
+            if (tokenAddress && hasCoinDefinitions) {
+                const isTokenKnown = selectIsSpecificCoinDefinitionKnown(
+                    getState(),
+                    symbol as NetworkSymbol,
+                    tokenAddress,
                 );
+
+                if (!isTokenKnown) {
+                    throw new Error('Missing token definition');
+                }
             }
-        } catch (error) {
-            console.error(error);
+
+            const timestamps = groupedTxs[key].map(tx => tx.blockTime!);
+
+            try {
+                const results = await getFiatRatesForTimestamps(
+                    { symbol: symbol as NetworkSymbol, tokenAddress: tokenAddress as TokenAddress },
+                    timestamps,
+                    localCurrency,
+                    isElectrumBackend,
+                );
+
+                if (results && 'tickers' in results) {
+                    dispatch(
+                        transactionsActions.updateTransactionFiatRate(
+                            groupedTxs[key].map((tx, i) => ({
+                                txid: tx.txid,
+                                updateObject: { rates: results.tickers[i]?.rates },
+                                account,
+                                ts: Date.now(),
+                            })),
+                        ),
+                    );
+                }
+            } catch (error) {
+                console.error(error);
+            }
         }
     },
 );
