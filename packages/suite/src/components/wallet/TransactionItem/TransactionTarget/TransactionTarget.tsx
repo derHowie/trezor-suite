@@ -62,6 +62,16 @@ export const TokenTransfer = ({
                     />
                 )
             }
+            fiatAmount={
+                !isTestnet(transaction.symbol) && transfer.amount ? (
+                    <FiatValue
+                        amount={formatAmount(transfer.amount, transfer.decimals)}
+                        symbol={transaction.symbol}
+                        source={transaction.rates}
+                        useCustomSource
+                    />
+                ) : undefined
+            }
         />
     );
 };

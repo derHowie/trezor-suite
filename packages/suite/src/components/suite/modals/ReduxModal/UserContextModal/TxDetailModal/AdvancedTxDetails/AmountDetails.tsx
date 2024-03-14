@@ -14,6 +14,7 @@ import {
 } from '@suite-common/wallet-utils';
 import BigNumber from 'bignumber.js';
 import { FormattedNftAmount } from 'src/components/suite/FormattedNftAmount';
+import { useSelector } from 'src/hooks/suite';
 
 const MainContainer = styled.div`
     display: flex;
@@ -51,6 +52,7 @@ export const AmountDetails = ({ tx, isTestnet }: AmountDetailsProps) => {
     const fee = formatNetworkAmount(tx.fee, tx.symbol);
     const cardanoWithdrawal = formatCardanoWithdrawal(tx);
     const cardanoDeposit = formatCardanoDeposit(tx);
+    const { selectedAccount } = useSelector(state => state.wallet);
 
     return (
         <MainContainer>
@@ -207,12 +209,18 @@ export const AmountDetails = ({ tx, isTestnet }: AmountDetailsProps) => {
                                 />
                             )
                         }
-                        // no history rates available for tokens
-                        thirdColumn={null}
-                        fourthColumn={
+                        thirdColumn={
                             <FiatValue
                                 amount={formatAmount(transfer.amount, transfer.decimals)}
                                 symbol={transfer.symbol}
+                                source={tx.rates}
+                                useCustomSource
+                            />
+                        }
+                        fourthColumn={
+                            <FiatValue
+                                amount={formatAmount(transfer.amount, transfer.decimals)}
+                                symbol={selectedAccount.account?.symbol as NetworkSymbol}
                                 tokenAddress={transfer.contract}
                             />
                         }
