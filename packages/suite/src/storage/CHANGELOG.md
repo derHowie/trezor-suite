@@ -1,5 +1,9 @@
 # Storage changelog
 
+## 44
+
+-   remove rates for all transactions with tokens because rate was not for the token but for the network coin
+
 ## 43
 
 -   fixes bug cannot set properties of undefined (setting 'passwords') introduced by migration 41
