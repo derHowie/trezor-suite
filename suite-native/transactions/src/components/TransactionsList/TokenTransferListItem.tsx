@@ -1,5 +1,5 @@
 import { AccountKey } from '@suite-common/wallet-types';
-import { EthereumTokenTransfer } from '@suite-native/ethereum-tokens';
+import { EthereumTokenTransfer, WalletAccountTransaction } from '@suite-native/ethereum-tokens';
 import {
     EthereumTokenAmountFormatter,
     EthereumTokenToFiatAmountFormatter,
@@ -11,6 +11,7 @@ import { signValueMap } from '../TransactionDetail/TransactionDetailHeader';
 type TokenTransferListItemProps = {
     txid: string;
     tokenTransfer: EthereumTokenTransfer;
+    transaction: WalletAccountTransaction;
     accountKey: AccountKey;
     includedCoinsCount?: number;
     isFirst?: boolean;
@@ -19,8 +20,10 @@ type TokenTransferListItemProps = {
 
 export const TokenTransferListItemValues = ({
     tokenTransfer,
+    transaction,
 }: {
     tokenTransfer: EthereumTokenTransfer;
+    transaction: WalletAccountTransaction;
 }) => (
     <>
         <EthereumTokenToFiatAmountFormatter
@@ -30,6 +33,7 @@ export const TokenTransferListItemValues = ({
             signValue={signValueMap[tokenTransfer.type]}
             numberOfLines={1}
             ellipsizeMode="tail"
+            customRates={transaction.rates}
         />
         <EthereumTokenAmountFormatter
             value={tokenTransfer.amount}
@@ -44,6 +48,7 @@ export const TokenTransferListItemValues = ({
 export const TokenTransferListItem = ({
     txid,
     accountKey,
+    transaction,
     tokenTransfer,
     includedCoinsCount = 0,
     isFirst,
@@ -58,6 +63,6 @@ export const TokenTransferListItem = ({
         isFirst={isFirst}
         isLast={isLast}
     >
-        <TokenTransferListItemValues tokenTransfer={tokenTransfer} />
+        <TokenTransferListItemValues tokenTransfer={tokenTransfer} transaction={transaction} />
     </TransactionListItemContainer>
 );

@@ -2,6 +2,7 @@ import { TextProps, Text } from '@suite-native/atoms';
 import { useFormatters } from '@suite-common/formatters';
 import { TokenAddress } from '@suite-common/wallet-types';
 import { SignValue } from '@suite-common/suite-types';
+import { FiatRatesLegacy } from '@trezor/blockchain-link';
 
 import { FormatterProps } from '../types';
 import { AmountText } from './AmountText';
@@ -13,6 +14,7 @@ type EthereumTokenToFiatAmountFormatterProps = {
     isDiscreetText?: boolean;
     decimals?: number;
     signValue?: SignValue;
+    customRates?: FiatRatesLegacy;
 } & FormatterProps<number | string> &
     TextProps;
 
@@ -24,6 +26,7 @@ export const EthereumTokenToFiatAmountFormatter = ({
     signValue,
     ellipsizeMode,
     numberOfLines,
+    customRates,
     ...rest
 }: EthereumTokenToFiatAmountFormatterProps) => {
     const { FiatAmountFormatter } = useFormatters();
@@ -32,6 +35,7 @@ export const EthereumTokenToFiatAmountFormatter = ({
         network: 'eth',
         tokenAddress: contract,
         tokenDecimals: decimals,
+        customRates,
     });
 
     const formattedFiatValue = FiatAmountFormatter.format(fiatValue ?? 0);

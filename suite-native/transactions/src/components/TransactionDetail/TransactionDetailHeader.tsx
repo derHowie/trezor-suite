@@ -116,6 +116,7 @@ export const TransactionDetailHeader = ({
                                 contract={tokenTransfer.contract}
                                 value={tokenTransfer.amount}
                                 decimals={tokenTransfer.decimals}
+                                customRates={transaction.rates}
                             />
                         ) : (
                             <CryptoToFiatAmountFormatter

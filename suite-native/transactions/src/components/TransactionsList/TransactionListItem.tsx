@@ -86,6 +86,7 @@ export const TransactionListItem = ({
     if (isTokenOnlyTransaction)
         return (
             <TokenTransferListItem
+                transaction={transaction}
                 accountKey={accountKey}
                 txid={transaction.txid}
                 tokenTransfer={transaction.tokens[0]}
