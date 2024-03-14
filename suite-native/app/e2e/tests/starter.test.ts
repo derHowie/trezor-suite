@@ -1,3 +1,4 @@
+// `expect` keyword is already used by jest.
 import { expect as detoxExpect } from 'detox';
 
 import { TrezorUserEnvLink } from '@trezor/trezor-user-env-link';
@@ -9,7 +10,9 @@ const TREZOR_DEVICE_LABEL = 'Trezor T - Tester';
 describe('Start discovery', () => {
     beforeAll(async () => {
         // Prepare device for tests and close it.
+        await TrezorUserEnvLink.api.trezorUserEnvDisconnect();
         await TrezorUserEnvLink.api.trezorUserEnvConnect();
+        TrezorUserEnvLink.ws.on('message', event => console.log('' + event));
         await TrezorUserEnvLink.api.startEmu({ wipe: true });
         await TrezorUserEnvLink.api.setupEmu({ label: TREZOR_DEVICE_LABEL });
         await TrezorUserEnvLink.api.startBridge();
@@ -48,16 +51,12 @@ describe('Start discovery', () => {
             );
         }
 
-        await device.setURLBlacklist([]);
+        device.disableSynchronization();
         await TrezorUserEnvLink.api.startEmu();
 
         await sleep(8000);
 
-        await device.disableSynchronization();
-
         await detoxExpect(element(by.text(TREZOR_DEVICE_LABEL))).toBeVisible();
         await detoxExpect(element(by.text('My portfolio balance'))).toBeVisible();
-
-        await TrezorUserEnvLink.api.trezorUserEnvDisconnect();
     });
 });

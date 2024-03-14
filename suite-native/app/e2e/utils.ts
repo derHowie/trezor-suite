@@ -1,7 +1,8 @@
 import { resolveConfig } from 'detox/internals';
 
 const LAUNCH_ARGS = {
-    detoxURLBlacklistRegex: '\\("^.*127.0.0.1:21325.*"\\)',
+    //Do not synchronize communication over the trezor bridge
+    detoxURLBlacklistRegex: '\\("^.*127.0.0.1.*"\\)',
 };
 
 const platform = device.getPlatform();
