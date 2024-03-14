@@ -132,6 +132,7 @@ export const composeEthereumSendFormTransactionThunk = createThunk(
         // amount in essential for a proper calculation of gasLimit (via blockbook/geth)
         const estimatedFee = await TrezorConnect.blockchainEstimateFee({
             coin: account.symbol,
+            identity: account.deviceState,
             request: {
                 blocks: [2],
                 specific: {

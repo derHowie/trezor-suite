@@ -18,7 +18,7 @@ import TrezorConnect, {
     BlockchainNotification,
     FeeLevel,
 } from '@trezor/connect';
-import { arrayDistinct } from '@trezor/utils';
+import { arrayDistinct, arrayToDictionary } from '@trezor/utils';
 import type { Account, CustomBackend, NetworksFees } from '@suite-common/wallet-types';
 import type { Timeout } from '@trezor/type-utils';
 import { notificationsActions } from '@suite-common/toast-notifications';
@@ -217,11 +217,14 @@ export const subscribeBlockchainThunk = createThunk(
             selectAccounts(getState()),
         ).filter(a => isTrezorConnectBackendType(a.backendType)); // do not subscribe accounts with unsupported backend type
         if (!accountsToSubscribe.length) return;
+        const paramsArray =
+            symbol === 'eth'
+                ? Object.entries(
+                      arrayToDictionary(accountsToSubscribe, account => account.deviceState, true),
+                  ).map(([identity, accounts]) => ({ accounts, coin: symbol, identity }))
+                : [{ accounts: accountsToSubscribe, coin: symbol }];
 
-        return TrezorConnect.blockchainSubscribe({
-            accounts: accountsToSubscribe,
-            coin: symbol,
-        });
+        return Promise.all(paramsArray.map(params => TrezorConnect.blockchainSubscribe(params)));
     },
 );
 
@@ -233,23 +236,46 @@ export const unsubscribeBlockchainThunk = createThunk(
         const symbols = removedAccounts.map(({ symbol }) => symbol).filter(arrayDistinct);
 
         const accounts = selectAccounts(getState());
-        const promises = symbols.map(symbol => {
+        const promises = symbols.flatMap(symbol => {
             const accountsToSubscribe = findAccountsByNetwork(symbol, accounts).filter(a =>
                 isTrezorConnectBackendType(a.backendType),
             ); // do not unsubscribe accounts with unsupported backend type
-            if (accountsToSubscribe.length) {
-                // there are some accounts left, update subscription
-                return TrezorConnect.blockchainSubscribe({
-                    accounts: accountsToSubscribe,
-                    coin: symbol,
-                });
+
+            if (symbol === 'eth') {
+                const identities = removedAccounts
+                    .filter(acc => acc.symbol === symbol)
+                    .map(acc => acc.deviceState)
+                    .filter(arrayDistinct);
+                const accountIdentities = arrayToDictionary(
+                    accountsToSubscribe,
+                    account => account.deviceState,
+                    true,
+                );
+
+                return identities.map(identity =>
+                    accountIdentities[identity]
+                        ? TrezorConnect.blockchainSubscribe({
+                              accounts: accountIdentities[identity],
+                              coin: symbol,
+                              identity,
+                          })
+                        : TrezorConnect.blockchainDisconnect({ coin: symbol, identity }),
+                );
             }
 
-            // there are no accounts left for this coin, disconnect backend
-            return TrezorConnect.blockchainDisconnect({ coin: symbol });
+            return [
+                accountsToSubscribe.length
+                    ? // there are some accounts left, update subscription
+                      TrezorConnect.blockchainSubscribe({
+                          accounts: accountsToSubscribe,
+                          coin: symbol,
+                      })
+                    : // there are no accounts left for this coin, disconnect backend
+                      TrezorConnect.blockchainDisconnect({ coin: symbol }),
+            ];
         });
 
-        return Promise.all(promises as Promise<any>[]);
+        return Promise.all(promises);
     },
 );
 
