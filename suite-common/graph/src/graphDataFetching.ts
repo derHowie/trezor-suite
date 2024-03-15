@@ -58,6 +58,7 @@ export const getLatestAccountBalance = async ({
     const networkType = getNetworkType(coin);
 
     const accountInfo = await TrezorConnect.getAccountInfo({
+        // @ID
         coin,
         descriptor,
         suppressBackupWarning: true,
@@ -104,6 +105,7 @@ export const getAccountBalanceHistory = async ({
             });
         }
         const connectBalanceHistory = await TrezorConnect.blockchainGetAccountBalanceHistory({
+            // @ID
             coin,
             descriptor,
             to: endTimeFrameTimestamp,

@@ -122,6 +122,7 @@ export const getAccountMovementEvents = async ({
             });
         }
         const connectBalanceHistory = await TrezorConnect.blockchainGetAccountBalanceHistory({
+            // @ID
             coin,
             descriptor,
             from: startOfTimeFrameDate ? getUnixTime(startOfTimeFrameDate) : undefined,

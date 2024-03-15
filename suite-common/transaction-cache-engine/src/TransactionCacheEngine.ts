@@ -117,6 +117,7 @@ export class TransactionCacheEngine {
             page += 1;
 
             const result = await TrezorConnect.getAccountInfo({
+                // @ID
                 coin,
                 descriptor,
                 details: 'txs',
@@ -274,6 +275,7 @@ export class TransactionCacheEngine {
                 }));
 
                 TrezorConnect.blockchainSubscribe({
+                    // @ID
                     accounts: accountDescriptors,
                     coin,
                 });
@@ -285,6 +287,7 @@ export class TransactionCacheEngine {
         await this.initPromise;
 
         TrezorConnect.blockchainUnsubscribe({
+            // @ID
             accounts: [{ descriptor }],
             coin,
         });

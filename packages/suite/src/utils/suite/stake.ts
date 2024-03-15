@@ -54,6 +54,7 @@ const stake = async ({
         // gasLimit calculation based on address, amount and data size
         // amount is essential for a proper calculation of gasLimit (via blockbook/geth)
         const estimatedFee = await TrezorConnect.blockchainEstimateFee({
+            // @ID
             coin: symbol,
             request: {
                 blocks: [2],
@@ -94,6 +95,7 @@ const unstake = async ({
 }) => {
     try {
         const accountInfo = await TrezorConnect.getAccountInfo({
+            // @ID
             coin: symbol,
             details: 'tokenBalances',
             descriptor: from,
@@ -129,6 +131,7 @@ const unstake = async ({
         // gasLimit calculation based on address, amount and data size
         // amount is essential for a proper calculation of gasLimit (via blockbook/geth)
         const estimatedFee = await TrezorConnect.blockchainEstimateFee({
+            // @ID
             coin: symbol,
             request: {
                 blocks: [2],
@@ -160,6 +163,7 @@ const unstake = async ({
 const claimWithdrawRequest = async ({ from, symbol }: StakeTxBaseArgs) => {
     try {
         const accountInfo = await TrezorConnect.getAccountInfo({
+            // @ID
             coin: symbol,
             details: 'tokenBalances',
             descriptor: from,
@@ -189,6 +193,7 @@ const claimWithdrawRequest = async ({ from, symbol }: StakeTxBaseArgs) => {
         // gasLimit calculation based on address, amount and data size
         // amount is essential for a proper calculation of gasLimit (via blockbook/geth)
         const estimatedFee = await TrezorConnect.blockchainEstimateFee({
+            // @ID
             coin: symbol,
             request: {
                 blocks: [2],

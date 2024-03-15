@@ -3,6 +3,7 @@ import type {
     CustomBackend,
     BlockchainNetworks,
     BackendSettings,
+    Account,
 } from '@suite-common/wallet-types';
 import { TREZOR_CONNECT_BACKENDS, BackendType, NetworkSymbol } from '@suite-common/wallet-config';
 
@@ -52,3 +53,6 @@ export const isTrezorConnectBackendType = (type?: BackendType) => {
 
     return !!TREZOR_CONNECT_BACKENDS.find(b => b === type);
 };
+
+export const getAccountIdentity = (account: Account) =>
+    account.networkType === 'ethereum' ? account.deviceState : undefined;

@@ -142,6 +142,7 @@ const addAccountsByDescriptorThunk = createThunk(
         { dispatch },
     ) => {
         const { success, payload: accountInfo } = await TrezorConnect.getAccountInfo({
+            // @ID
             coin: bundleItem.coin,
             descriptor: bundleItem.descriptor,
             useEmptyPassphrase: true,
@@ -190,6 +191,7 @@ const discoverAccountsByDescriptorThunk = createThunk(
 
         for (const bundleItem of descriptorsBundle) {
             const { success, payload: accountInfo } = await TrezorConnect.getAccountInfo({
+                // @ID
                 coin: bundleItem.coin,
                 descriptor: bundleItem.descriptor,
                 useEmptyPassphrase: true,

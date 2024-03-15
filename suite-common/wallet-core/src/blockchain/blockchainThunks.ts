@@ -49,6 +49,7 @@ export const preloadFeeInfoThunk = createThunk(
         const networks = networksCompatibility.filter(n => !n.isHidden && !n.accountType);
         const promises = networks.map(network =>
             TrezorConnect.blockchainEstimateFee({
+                // @ID
                 coin: network.symbol,
                 request: {
                     feeLevels: 'preloaded',
@@ -99,6 +100,7 @@ export const updateFeeInfoThunk = createThunk(
             // create raw call to @trezor/blockchain-link, receive data and create FeeLevel.normal from it
 
             const result = await TrezorConnect.blockchainEstimateFee({
+                // @ID
                 coin: network.symbol,
                 request: {
                     blocks: [2],
@@ -120,6 +122,7 @@ export const updateFeeInfoThunk = createThunk(
             }
         } else {
             const result = await TrezorConnect.blockchainEstimateFee({
+                // @ID
                 coin: network.symbol,
                 request: {
                     feeLevels: 'smart',
@@ -224,7 +227,7 @@ export const subscribeBlockchainThunk = createThunk(
                   ).map(([identity, accounts]) => ({ accounts, coin: symbol, identity }))
                 : [{ accounts: accountsToSubscribe, coin: symbol }];
 
-        return Promise.all(paramsArray.map(params => TrezorConnect.blockchainSubscribe(params)));
+        return Promise.all(paramsArray.map(params => TrezorConnect.blockchainSubscribe(params))); // @ID
     },
 );
 
@@ -252,14 +255,16 @@ export const unsubscribeBlockchainThunk = createThunk(
                     true,
                 );
 
-                return identities.map(identity =>
-                    accountIdentities[identity]
-                        ? TrezorConnect.blockchainSubscribe({
-                              accounts: accountIdentities[identity],
-                              coin: symbol,
-                              identity,
-                          })
-                        : TrezorConnect.blockchainDisconnect({ coin: symbol, identity }),
+                return identities.map(
+                    identity =>
+                        accountIdentities[identity]
+                            ? TrezorConnect.blockchainSubscribe({
+                                  // @ID
+                                  accounts: accountIdentities[identity],
+                                  coin: symbol,
+                                  identity,
+                              })
+                            : TrezorConnect.blockchainDisconnect({ coin: symbol, identity }), // @ID
                 );
             }
 
@@ -267,11 +272,12 @@ export const unsubscribeBlockchainThunk = createThunk(
                 accountsToSubscribe.length
                     ? // there are some accounts left, update subscription
                       TrezorConnect.blockchainSubscribe({
+                          // @ID
                           accounts: accountsToSubscribe,
                           coin: symbol,
                       })
                     : // there are no accounts left for this coin, disconnect backend
-                      TrezorConnect.blockchainDisconnect({ coin: symbol }),
+                      TrezorConnect.blockchainDisconnect({ coin: symbol }), // @ID
             ];
         });
 

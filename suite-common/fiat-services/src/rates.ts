@@ -30,6 +30,7 @@ const getConnectFiatRatesForTimestamp = (
     scheduleAction(
         () =>
             TrezorConnect.blockchainGetFiatRatesForTimestamps({
+                // @ID
                 coin: ticker.symbol,
                 token: ticker.tokenAddress,
                 timestamps,
@@ -50,6 +51,7 @@ export const fetchCurrentFiatRates = async ({
             const { success, payload } = await scheduleAction(
                 () =>
                     TrezorConnect.blockchainGetCurrentFiatRates({
+                        // @ID
                         coin: ticker.symbol,
                         token: ticker.tokenAddress,
                         currencies: [localCurrency],

@@ -66,6 +66,7 @@ export const AccountImportLoadingScreen = ({
         const getAccountInfo = async () => {
             const [fetchedAccountInfo] = await Promise.all([
                 TrezorConnect.getAccountInfo({
+                    // @ID
                     coin: networkSymbol,
                     descriptor: xpubAddress,
                     details: 'txs',

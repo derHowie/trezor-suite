@@ -477,6 +477,7 @@ export const startDiscoveryThunk = createThunk(
 
         TrezorConnect.on<AccountInfo | null>(UI.BUNDLE_PROGRESS, onBundleProgress);
         const result = await TrezorConnect.getAccountInfo({
+            // @ID
             device,
             bundle,
             keepSession: true,
