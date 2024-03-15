@@ -755,9 +755,7 @@ export const migrate: OnUpgradeFunc<SuiteDBSchema> = async (
 
     if (oldVersion < 44) {
         await updateAll(transaction, 'txs', tx => {
-            if (tx.tx.tokens.length > 0 && tx.tx.rates) {
-                delete tx.tx.rates;
-            }
+            delete tx.tx.rates;
 
             return tx;
         });

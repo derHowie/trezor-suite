@@ -2,7 +2,7 @@
 
 ## 44
 
--   remove rates for all transactions with tokens because rate was not for the token but for the network coin
+-   remove rates for all transactions since we are using selectors to get rates
 
 ## 43
 
