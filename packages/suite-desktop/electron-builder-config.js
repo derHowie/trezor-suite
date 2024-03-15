@@ -99,6 +99,14 @@ module.exports = {
         darkModeSupport: true,
         entitlements: 'entitlements.mac.inherit.plist',
         entitlementsInherit: 'entitlements.mac.inherit.plist',
+        extendInfo: {
+            // Delete those keys from Info.plist, Electron add them by default but Suite don't need those permissions
+            NSBluetoothAlwaysUsageDescription: undefined,
+            NSBluetoothPeripheralUsageDescription: undefined,
+            NSMicrophoneUsageDescription: undefined,
+            // Replace default "This app needs access to the camera" message with our own
+            NSCameraUsageDescription: 'Trezor Suite needs access to the camera to scan QR code.',
+        },
         target: ['dmg', 'zip'],
     },
     win: {
