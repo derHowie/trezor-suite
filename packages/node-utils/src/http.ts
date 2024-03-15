@@ -3,7 +3,7 @@ import * as net from 'net';
 import * as url from 'url';
 
 import type { RequiredKey } from '@trezor/type-utils';
-import { TypedEmitter } from '@trezor/utils';
+import { LogMessage, TypedEmitter } from '@trezor/utils';
 import { arrayPartition } from '@trezor/utils';
 
 import { getFreePort } from './getFreePort';
@@ -16,7 +16,7 @@ type Logger = {
     info: LogFn;
     warn: LogFn;
     error: LogFn;
-    getLog: () => string[];
+    getLog: () => LogMessage[];
 };
 
 type OriginalLogFn = (topic: string, message: string | string[]) => void;
@@ -24,7 +24,7 @@ type OriginalLogger = {
     info: OriginalLogFn;
     warn: OriginalLogFn;
     error: OriginalLogFn;
-    getLog?: () => string[];
+    getLog?: () => LogMessage[];
 };
 
 type RequestWithParams = Request & {
@@ -271,7 +271,7 @@ export class HttpServer<T extends EventMap> extends TypedEmitter<T & BaseEvents>
         }
 
         request.on('aborted', () => {
-            this.logger.info(`Request ${request.url} aborted`);
+            this.logger.info(`Request ${request.method} ${request.url} aborted`);
         });
 
         const { pathname } = url.parse(request.url, true);
@@ -282,12 +282,12 @@ export class HttpServer<T extends EventMap> extends TypedEmitter<T & BaseEvents>
 
             return;
         }
-        this.logger.info(`Handling request for ${pathname}`);
+        this.logger.info(`Handling request for ${request.method} ${pathname}`);
 
         const route = this.findBestMatchingRoute(pathname, request.method);
         if (!route) {
-            this.emitter.emit('server/error', `Route not found for ${pathname}`);
-            this.logger.warn(`Route not found for ${pathname}`);
+            this.emitter.emit('server/error', `Route not found for ${request.method} ${pathname}`);
+            this.logger.warn(`Route not found for ${request.method} ${pathname}`);
 
             return;
         }
@@ -375,7 +375,7 @@ const checkOrigin = ({
 
     if (!isOriginAllowed) {
         logger.warn(`Origin rejected for ${pathname}`);
-        logger.warn(`- Received: '${referer}'`);
+        logger.warn(`- Received: referer: '${referer}', origin: '${origin}'`);
         logger.warn(`- Allowed origins: ${origins.map(o => `'${o}'`).join(', ')}`);
 
         return false;
