@@ -19,7 +19,7 @@ import { getAccountAddressN } from '../utils/accountUtils';
 import { getSegwitNetwork, getBech32Network } from '../data/coinInfo';
 import { initLog } from '../utils/debug';
 
-import type { Device } from './Device';
+import { Device, GET_FEATURES_TIMEOUT } from './Device';
 import type { CoinInfo, BitcoinNetworkInfo, Network } from '../types';
 import type { HDNodeResponse } from '../types/api/getPublicKey';
 import { Assert } from '@trezor/schema-utils';
@@ -392,7 +392,26 @@ export class DeviceCommands {
             data: msg,
             protocol: this.device.protocol,
         });
+
+        // todo: pass timeout to transport calls instead
+
+        /**
+         * These calls have no right to take longer than certain time. If it takes longer we can be sure that they will never resolve.
+         * With other calls however we can't deploy this timeout rule since some of the calls won't resolve before user interaction on device.
+         * This is no a big problem, because it is always either GetFeatures or Initialize messages which are sent at the beginning of each "session",
+         * and if these messages pass, all subsequent calls will pass as well.
+         */
+        let abortTimeout;
+        if (['Initialize', 'GetFeatures'].includes(type)) {
+            abortTimeout = setTimeout(() => {
+                this.callPromise?.abort();
+                // timeout here must be longer than the other usage in Device.ts in order not to interfere with the old behavior
+            }, GET_FEATURES_TIMEOUT + 100);
+        }
+
         const res = await this.callPromise.promise;
+        clearTimeout(abortTimeout);
+
         this.callPromise = undefined;
         if (!res.success) {
             logger.warn('Received error', res.error);
