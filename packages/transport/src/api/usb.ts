@@ -203,6 +203,7 @@ export class UsbApi extends AbstractApi {
         }
 
         try {
+            console.log('usb device.open');
             await device.open();
         } catch (err) {
             return this.error({
@@ -213,6 +214,8 @@ export class UsbApi extends AbstractApi {
 
         if (first) {
             try {
+                console.log('usb device.selectConfiguration');
+
                 await device.selectConfiguration(CONFIGURATION_ID);
                 // reset fails on ChromeOS and windows
                 await device.reset();
@@ -221,6 +224,8 @@ export class UsbApi extends AbstractApi {
             }
         }
         try {
+            console.log('usb device.claimInterface');
+
             // claim device for exclusive access by this app
             await device.claimInterface(INTERFACE_ID);
         } catch (err) {

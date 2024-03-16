@@ -24,8 +24,10 @@ const readHeaderChunked = (buffer: Buffer) => {
 // [compatibility]: accept Buffer just like decode does. But this would require changes in lower levels
 export const decode: TransportProtocolDecode = bytes => {
     const buffer = Buffer.from(bytes);
+    console.log('buffer', buffer);
+    console.log('buffer.lenght', buffer.byteLength);
     const { magic, sharp1, sharp2, typeId, length } = readHeaderChunked(buffer);
-
+    console.log('magic, sharp1, sharp2, typeId, length', magic, sharp1, sharp2, typeId, length);
     if (
         magic !== MESSAGE_MAGIC_HEADER_BYTE ||
         sharp1 !== MESSAGE_HEADER_BYTE ||

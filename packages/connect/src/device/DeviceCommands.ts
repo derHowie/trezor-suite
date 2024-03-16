@@ -412,6 +412,8 @@ export class DeviceCommands {
         const res = await this.callPromise.promise;
         clearTimeout(abortTimeout);
 
+        console.log('deviceCommands.call res', res);
+
         this.callPromise = undefined;
         if (!res.success) {
             logger.warn('Received error', res.error);

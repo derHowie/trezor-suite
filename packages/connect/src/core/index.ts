@@ -666,6 +666,8 @@ const onCall = async (message: IFrameCallMessage) => {
             useCardanoDerivation: method.useCardanoDerivation,
         });
     } catch (error) {
+        console.log('core onCall catch error', error);
+
         // corner case: Device was disconnected during authorization
         // this device_id needs to be stored and penalized with delay on future connection
         // this solves issue with U2F login (leaves space for requests from services which aren't using trezord)
@@ -692,7 +694,7 @@ const onCall = async (message: IFrameCallMessage) => {
         // TODO: This requires a massive refactoring https://github.com/trezor/trezor-suite/issues/5323
         // @ts-expect-error TODO: messageResponse should be assigned from the response of "inner" function
         const response = messageResponse;
-
+        console.log('finally reponse', response);
         if (response) {
             if (method.name === 'rebootToBootloader' && response.success) {
                 // Wait for device to switch to bootloader
@@ -708,6 +710,7 @@ const onCall = async (message: IFrameCallMessage) => {
                 }
             }
 
+            console.log('finally await device.cleanup');
             await device.cleanup();
 
             closePopup();
@@ -722,6 +725,7 @@ const onCall = async (message: IFrameCallMessage) => {
                     _deviceList.removeAuthPenalty(device);
                 }
             }
+            console.log('finally post message');
             postMessage(response);
         }
     }
