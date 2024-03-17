@@ -9,6 +9,7 @@ import {
     ChainedTransactions,
     PrecomposedTransactionFinal,
     AccountKey,
+    TokenAddress,
 } from '@suite-common/wallet-types';
 import {
     AccountAddress,
@@ -952,25 +953,20 @@ export const getTxHeaderSymbol = (transaction: WalletAccountTransaction) => {
     return symbol;
 };
 
-export const groupTransactionsBySymbol = (txs: WalletAccountTransaction[]) => {
-    const groupedTxs: Record<string, WalletAccountTransaction[]> = {};
+export const groupTokensTransactionsByContractAddress = (txs: WalletAccountTransaction[]) => {
+    const groupedTokensTxs: Record<TokenAddress, WalletAccountTransaction[]> = {};
 
     txs.forEach(tx => {
-        if (tx.tokens.length === 0) {
-            if (!groupedTxs[tx.symbol]) {
-                groupedTxs[tx.symbol] = [];
-            }
-            groupedTxs[tx.symbol].push(tx);
-        } else {
+        if (tx.tokens && tx.tokens.length > 0) {
             tx.tokens.forEach(token => {
-                const groupKey = `${tx.symbol}-${token.contract}`;
-                if (!groupedTxs[groupKey]) {
-                    groupedTxs[groupKey] = [];
+                const groupKey = token.contract as TokenAddress;
+                if (!groupedTokensTxs[groupKey]) {
+                    groupedTokensTxs[groupKey] = [];
                 }
-                groupedTxs[groupKey].push(tx);
+                groupedTokensTxs[groupKey].push(tx);
             });
         }
     });
 
-    return groupedTxs;
+    return groupedTokensTxs;
 };

@@ -8,19 +8,23 @@ import { FiatCurrencyCode } from '@suite-common/suite-config';
 import {
     Account,
     TickerId,
-    RateType,
     Timestamp,
     TokenAddress,
     WalletAccountTransaction,
+    RateTypeWithoutHistoric,
 } from '@suite-common/wallet-types';
-import { groupTransactionsBySymbol, isTestnet } from '@suite-common/wallet-utils';
+import {
+    groupTokensTransactionsByContractAddress,
+    isTestnet,
+    roundTimestampsToNearestPastHour,
+} from '@suite-common/wallet-utils';
 import { getNetworkFeatures, NetworkSymbol } from '@suite-common/wallet-config';
 
 import { fiatRatesActionsPrefix, REFETCH_INTERVAL } from './fiatRatesConstants';
 import { selectTickersToBeUpdated, selectTransactionsWithMissingRates } from './fiatRatesSelectors';
-import { transactionsActions } from '../transactions/transactionsActions';
 import { selectIsSpecificCoinDefinitionKnown } from '../token-definitions/tokenDefinitionsSelectors';
 import { selectIsElectrumBackendSelected } from '../blockchain/blockchainSelectors';
+import { fiatRatesActions } from './fiatRatesActions';
 
 type UpdateTxsFiatRatesThunkPayload = {
     account: Account;
@@ -39,19 +43,45 @@ export const updateTxsFiatRatesThunk = createThunk(
 
         const isElectrumBackend = selectIsElectrumBackendSelected(getState(), account.symbol);
 
-        const groupedTxs = groupTransactionsBySymbol(txs);
+        try {
+            const timestamps = txs.map(tx => tx.blockTime!);
+            const roundedTimestamps = roundTimestampsToNearestPastHour(timestamps as Timestamp[]);
+            const uniqueTimestamps = [...new Set(roundedTimestamps)];
 
-        for (const key in groupedTxs) {
-            const [symbol, tokenAddress] = key.split('-');
+            const results = await getFiatRatesForTimestamps(
+                { symbol: account.symbol },
+                uniqueTimestamps,
+                localCurrency,
+                isElectrumBackend,
+            );
 
-            const hasCoinDefinitions = getNetworkFeatures(symbol as NetworkSymbol).includes(
+            if (results && 'tickers' in results) {
+                dispatch(
+                    fiatRatesActions.addFiatRatesForTimestamps({
+                        ticker: { symbol: account.symbol },
+                        localCurrency,
+                        rates: results.tickers.map(ticker => ({
+                            rate: ticker?.rates[localCurrency],
+                            timestamp: ticker.ts,
+                        })),
+                    }),
+                );
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        const groupedTokensTxs = groupTokensTransactionsByContractAddress(txs);
+
+        for (const token in groupedTokensTxs) {
+            const hasCoinDefinitions = getNetworkFeatures(account.symbol as NetworkSymbol).includes(
                 'coin-definitions',
             );
-            if (tokenAddress && hasCoinDefinitions) {
+            if (hasCoinDefinitions) {
                 const isTokenKnown = selectIsSpecificCoinDefinitionKnown(
                     getState(),
-                    symbol as NetworkSymbol,
-                    tokenAddress,
+                    account.symbol as NetworkSymbol,
+                    token as TokenAddress,
                 );
 
                 if (!isTokenKnown) {
@@ -59,26 +89,31 @@ export const updateTxsFiatRatesThunk = createThunk(
                 }
             }
 
-            const timestamps = groupedTxs[key].map(tx => tx.blockTime!);
+            const timestamps = groupedTokensTxs[token as TokenAddress].map(tx => tx.blockTime!);
+            const roundedTimestamps = roundTimestampsToNearestPastHour(timestamps as Timestamp[]);
+            const uniqueTimestamps = [...new Set(roundedTimestamps)];
 
             try {
                 const results = await getFiatRatesForTimestamps(
-                    { symbol: symbol as NetworkSymbol, tokenAddress: tokenAddress as TokenAddress },
-                    timestamps,
+                    {
+                        symbol: account.symbol as NetworkSymbol,
+                        tokenAddress: token as TokenAddress,
+                    },
+                    uniqueTimestamps,
                     localCurrency,
                     isElectrumBackend,
                 );
 
                 if (results && 'tickers' in results) {
                     dispatch(
-                        transactionsActions.updateTransactionFiatRate(
-                            groupedTxs[key].map((tx, i) => ({
-                                txid: tx.txid,
-                                updateObject: { rates: results.tickers[i]?.rates },
-                                account,
-                                ts: Date.now(),
+                        fiatRatesActions.addFiatRatesForTimestamps({
+                            ticker: { symbol: account.symbol, tokenAddress: token as TokenAddress },
+                            localCurrency,
+                            rates: results.tickers.map(ticker => ({
+                                rate: ticker?.rates[localCurrency],
+                                timestamp: ticker.ts,
                             })),
-                        ),
+                        }),
                     );
                 }
             } catch (error) {
@@ -88,7 +123,7 @@ export const updateTxsFiatRatesThunk = createThunk(
     },
 );
 
-const fetchFn: Record<RateType, typeof fetchCurrentFiatRates> = {
+const fetchFn: Record<RateTypeWithoutHistoric, typeof fetchCurrentFiatRates> = {
     current: fetchCurrentFiatRates,
     lastWeek: fetchLastWeekFiatRates,
 };
@@ -97,7 +132,7 @@ type UpdateCurrentFiatRatesThunkPayload = {
     ticker: TickerId;
     localCurrency: FiatCurrencyCode;
     lastSuccessfulFetchTimestamp: Timestamp;
-    rateType: RateType;
+    rateType: RateTypeWithoutHistoric;
     forceFetchToken?: boolean;
 };
 
@@ -153,7 +188,7 @@ export const updateMissingTxFiatRatesThunk = createThunk(
 );
 
 type FetchFiatRatesThunkPayload = {
-    rateType: RateType;
+    rateType: RateTypeWithoutHistoric;
     localCurrency: FiatCurrencyCode;
 };
 
@@ -183,13 +218,13 @@ export const fetchFiatRatesThunk = createThunk(
     },
 );
 
-const ratesTimeouts: Record<RateType, ReturnType<typeof setTimeout> | null> = {
+const ratesTimeouts: Record<RateTypeWithoutHistoric, ReturnType<typeof setTimeout> | null> = {
     current: null,
     lastWeek: null,
 };
 
 type PeriodicFetchFiatRatesThunkPayload = {
-    rateType: RateType;
+    rateType: RateTypeWithoutHistoric;
     localCurrency: FiatCurrencyCode;
 };
 
