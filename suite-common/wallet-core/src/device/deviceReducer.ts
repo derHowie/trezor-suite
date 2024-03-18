@@ -171,6 +171,30 @@ const changeDevice = (
     device: Device | TrezorDevice,
     extended?: Partial<AcquiredDevice>,
 ) => {
+    // from unacquired to unreadable
+    if (device.type === 'unreadable' && draft.selectedDevice) {
+        draft.selectedDevice = {
+            ...device,
+            connected: true,
+            available: false,
+            useEmptyPassphrase: true,
+            buttonRequests: [],
+            metadata: {},
+            ts: new Date().getTime(),
+        };
+        const index = draft.devices.findIndex(d => d.path === device.path);
+        if (index > -1) {
+            draft.devices[index] = {
+                ...device,
+                connected: true,
+                available: false,
+                useEmptyPassphrase: true,
+                buttonRequests: [],
+                metadata: {},
+                ts: new Date().getTime(),
+            };
+        }
+    }
     // change only acquired devices
     if (!device.features) return;
 

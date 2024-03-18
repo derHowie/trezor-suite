@@ -47,7 +47,7 @@ export const PrerequisitesGuide = ({ allowSwitchDevice }: PrerequisitesGuideProp
     const prerequisite = useSelector(selectPrerequisite);
 
     const isWebUsbTransport = isWebUsb(transport);
-
+    console.log('prerequisite', prerequisite);
     const TipComponent = useMemo(
         () => () => {
             switch (prerequisite) {

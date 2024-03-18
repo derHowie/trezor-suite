@@ -15,6 +15,7 @@ export const DEVICE = {
     RELEASED: 'device-released',
     USED_ELSEWHERE: 'device-used_elsewhere',
 
+    // todo: loading used nowhere
     LOADING: 'device-loading',
 
     // trezor-link events in protobuf format

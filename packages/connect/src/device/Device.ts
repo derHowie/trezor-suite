@@ -373,13 +373,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
                     return this._runInner(() => Promise.resolve({}), options);
                 }
 
-                if (
-                    [
-                        // todo: it shouldn't be by signal. only timeout!
-                        TRANSPORT_ERROR.ABORTED_BY_SIGNAL,
-                        TRANSPORT_ERROR.ABORTED_BY_TIMEOUT,
-                    ].includes(error.message)
-                ) {
+                if (TRANSPORT_ERROR.ABORTED_BY_TIMEOUT === error.message) {
                     this.unreadableError = 'Connection timeout';
                 }
 

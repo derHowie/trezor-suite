@@ -8,11 +8,19 @@
     "scripts": {
         "type-check": "yarn g:tsc --build",
         "lint:js": "yarn g:eslint '**/*.{ts,tsx,js}'",
-        "build:js": "yarn g:rimraf ./dist && yarn esbuild ./src/bin.ts --bundle --outfile=dist/bin.js --platform=node --target=node18 --external:usb",
+        "build:node:bin": "yarn esbuild ./src/bin.ts --bundle --outfile=dist/bin.js --platform=node --target=node18 --external:usb",
+        "build:node:module": "yarn esbuild ./src/index.ts --bundle --outfile=dist/index.js --platform=node --target=node18 --external:usb",
+        "build:node": "yarn build:node:bin && yarn build:node:module",
+        "build:ui": "yarn esbuild ./src/ui --bundle --outfile=dist/ui.js --platform=browser && babel ./dist -d ./dist",
+        "build:js": "yarn build:node && yarn build:ui",
         "build:bin": "yarn g:rimraf -rf build && yarn pkg ./dist/bin.js --config package.json",
-        "build": "yarn build:js && yarn build:bin"
+        "build": "yarn g:rimraf ./dist && yarn build:js && yarn build:bin"
     },
     "devDependencies": {
+        "@babel/cli": "^7.0.0",
+        "@babel/preset-env": "7.24.0",
+        "@types/accept-language-parser": "^1.5.6",
+        "babel-plugin-styled-components": "2.1.4",
         "esbuild": "^0.20.0",
         "pkg": "^5.8.1"
     },
@@ -22,6 +30,7 @@
         "@trezor/protocol": "workspace:*",
         "@trezor/transport": "workspace:*",
         "@trezor/utils": "workspace:*",
+        "accept-language-parser": "1.5.0",
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "usb": "^2.11.0"

@@ -1,7 +1,8 @@
 /**
  * Bridge runner
  */
-import { TrezordNode } from '@trezor/transport-bridge';
+// @ts-expect-error
+import { TrezordNode } from '@trezor/transport-bridge/dist/index';
 
 import { app, ipcMain } from '../typed-electron';
 import { BridgeProcess } from '../libs/processes/BridgeProcess';
