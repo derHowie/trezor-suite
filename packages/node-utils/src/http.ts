@@ -378,16 +378,16 @@ const checkReferer = ({
     logger: Logger;
 }) => {
     const { referer } = request.headers;
-    const origins = allowedReferer ?? [];
-    let isOriginAllowed = false;
+    const referers = allowedReferer ?? [];
+    let isRefererAllowed = false;
     // Allow all origins
-    if (origins.includes('*')) {
-        isOriginAllowed = true;
+    if (referers.includes('*')) {
+        isRefererAllowed = true;
     }
 
     // If referer is not defined, check if empty referrers are allowed
     else if (referer === undefined) {
-        isOriginAllowed = origins.includes('');
+        isRefererAllowed = referers.includes('');
     } else {
         // Domain of referer has to be in the allowed origins for that endpoint
         let domain: string;
@@ -400,21 +400,21 @@ const checkReferer = ({
         }
 
         return (
-            origins.findIndex(origin => {
+            referers.findIndex(referer => {
                 // Wildcard for subdomains
-                if (origin.startsWith('*')) {
-                    return domain.endsWith(origin.substring(1));
+                if (referer.startsWith('*')) {
+                    return domain.endsWith(referer.substring(1));
                 }
 
-                return origin.includes(domain);
+                return referers.includes(domain);
             }) > -1
         );
     }
 
-    if (!isOriginAllowed) {
-        logger.warn(`Origin rejected for ${pathname}`);
+    if (!isRefererAllowed) {
+        logger.warn(`Referer rejected for ${pathname}`);
         logger.warn(`- Received: referer: '${referer}', origin: '${origin}'`);
-        logger.warn(`- Allowed origins: ${origins.map(o => `'${o}'`).join(', ')}`);
+        logger.warn(`- Allowed referers: ${referers.map(o => `'${o}'`).join(', ')}`);
 
         return false;
     }
